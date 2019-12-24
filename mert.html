@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     
+    <title>merto ödev</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    
+attribute  vec4 vPosition;
+
+varying vec4 fColor;
+attribute vec4 u_position;
+
+attribute  vec3 vNormal;
+
+
+
+
+
+
+ 
+uniform vec3 theta;
+uniform vec3 tr;
+uniform vec3 sc;
+
+
+
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform float shininess;
+
+void main(){
+  
+
+    vec3 pos = -(modelViewMatrix * vPosition).xyz;
+    
+    //fixed light postion
+    
+    vec3 light = lightPosition.xyz;
+    vec3 L = normalize( light - pos );
+    
+    vec3 angles = radians( theta );
+    vec3 c = cos( angles );
+    vec3 s = sin( angles );
+    
+    
+    vec3 E = normalize( -pos );
+    vec3 H = normalize( L + E );
+    
+    vec4 NN = vec4(vNormal,0);
+
+    // Transform vertex normal into eye coordinates
+    
+    vec3 N = normalize( (modelViewMatrix*NN).xyz);
+
+    // Compute terms in the illumination equation
+    vec4 ambient = ambientProduct;
+
+    float Kd = max( dot(L, N), 0.0 );
+    vec4  diffuse = Kd*diffuseProduct;
+
+    float Ks = pow( max(dot(N, H), 0.0), shininess );
+    vec4  specular = Ks * specularProduct;
+    
+    if( dot(L, N) < 0.0 ) {
+	specular = vec4(0.0, 0.0, 0.0, 1.0);
+    } 
+    
+    
+    
+    
+    
+    
+   
+    mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+                    0.0,  c.x, -s.x, 0.0,
+                    0.0,  s.x,  c.x, 0.0,
+                    0.0,  0.0,  0.0, 1.0 );
+    mat4 ry = mat4( c.y, 0.0,  s.y, 0.0,
+                    0.0, 1.0,  0.0, 0.0,
+                   -s.y, 0.0,  c.y, 0.0,
+                    0.0, 0.0,  0.0, 1.0 );
+
+    mat4 rz = mat4( c.z, -s.z, 0.0, 0.0,
+                    s.z,  c.z, 0.0, 0.0,
+                    0.0,  0.0, 1.0, 0.0,
+                    0.0,  0.0, 0.0, 1.0 );
+                    
+    mat4 t= mat4(  1.0, 0.0, 0.0, 0,
+                      0.0, 1.0, 0.0, 0,
+                      0.0, 0.0, 1.0, 0,
+                      tr.xyz, 1.0 );
+                  
+    mat4 scx1= mat4(  sc.x*1.0, 0.0, 0.0, 0,
+                      0.0, sc.y*1.0, 0.0, 0,
+                      0.0, 0.0,sc.z* 1.0, 0,
+                      0.0, 0.0,  0.0, 1.0 ); 
+               
+                      
+                      
+         
+
+
+    
+    
+    
+    gl_Position = rz * ry * rx  * t * projectionMatrix * modelViewMatrix *  vPosition;
+    fColor = ambient + diffuse +specular;
+    
+    
+    
+    }
+	</script>
+     <script id="fragment-shader" type="x-shader/x-fragment">
+
+    precision mediump float;
+
+    varying vec4 fColor;
+    
+
+    void main()
+    {
+        gl_FragColor = fColor;
+    }
+    </script>
+	<script type="text/javascript" src="mert.js"></script>
+      <script type="text/javascript" src="MV.js"></script  >
+
+      
+  </head>
+  <body >
+    <canvas id="gl-canvas" width="640" height="550">
+	  Oops ... your browser doesn't support the HTML5 canvas element
+	</canvas>
+      
+      <h5>Change the background color by double clicking</h5> 
+      <h5>start Rotation press KEY "W" "A" "D"</h5>
+    <h5>stop Rotation press KEY "S"</h5> 
+
+      
+ <button id= "startButton">Start!</button>
+    <button id= "stopButton">Stop!</button>
+      
+     
+      <br/>
+      <br/>
+    <button id= "xButton">Rotate X</button>
+    <button id= "yButton">Rotate Y</button>
+    <button id= "zButton">Rotate Z</button>
+      
+ <br/>
+<br/>      
+      
+    <button id= "surfaceButton">Hide Surface(transparency)</button>
+      
+    <button id= "wireButton">View as a wire </button>
+    <button id ="colorButton">ChangeColor</button>
+          
+        <br/>    
+      <br/>   
+      <button id ="lightButton">Light (with orto)</button>
+        <br/>    
+      <br/> 
+    <button id= "normalButton">Normal </button>    
+    <button id= "orthoButton">Orto Projection(open the lights effect also) </button>
+    <button id ="persButton">Pers Projection</button>
+          
+      
+      <br/>    
+      <br/> 
+        
+
+          <div>
+    rotation speed 0  <input id="slide" type="range"
+    min="0" max="10" step="1" value="5"  />
+    10 </div>
+
+    <div>
+    translation on x -1  <input id="slide1" type="range"
+    min="-1" max="1" step="0.1" value="0" />
+    1 </div>
+
+    <div>
+    translation on y -1  <input id="slide2" type="range"
+    min="-1" max="1" step="0.1" value="0" />
+    1 </div>
+
+    <div>
+    translation on z -1  <input id="slide3" type="range"
+    min="-1" max="1" step="0.1" value="0" />
+    1 </div>
+  <!--
+    <div>
+    scale x   <input id="slide4" type="range"
+    min="-1" max="1" step="0.1" value="0"  />
+     </div>  
+    <div>
+    scaley   <input id="slide5" type="range"
+    min="-1" max="1" step="0.1" value="0"  />
+     </div>  
+     </div>  
+      <div>
+    scale z   <input id="slide6" type="range"
+    min="-1" max="1" step="0.1" value="0" />
+     </div>  
+          -->
+      
+  </body>
+</html>
